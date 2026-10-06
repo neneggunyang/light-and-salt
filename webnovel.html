@@ -225,7 +225,11 @@ const won=n=>'₩'+Number(n||0).toLocaleString('ko-KR');
 const labels={unread:'안 읽음',reading:'읽는 중',done:'완독',paused:'중단'};
 const seriesLabels={serializing:'연재',completed:'완결',hiatus:'연재중단'};
 const workTypeLabels={serial:'연재물',volume:'단행본'};
+const MIGRATION_SKIP_KEY='light-salt-migration-skipped';
 function localBooks(){try{return JSON.parse(localStorage.getItem(LOCAL_KEY)||'[]')}catch{return[]}}
+function migrationSkipped(){return localStorage.getItem(MIGRATION_SKIP_KEY)==='1'}
+function markMigrationSkipped(){localStorage.setItem(MIGRATION_SKIP_KEY,'1')}
+function clearMigrationSkipped(){localStorage.removeItem(MIGRATION_SKIP_KEY)}
 function setAuthError(msg=''){if($('authError'))$('authError').textContent=msg;if($('authMessage')){$('authMessage').textContent=msg;$('authMessage').classList.toggle('show',!!msg)}}
 function setAuthMsg(msg=''){if($('authMsg'))$('authMsg').textContent=msg;if($('authMessage')){$('authMessage').textContent=msg;$('authMessage').classList.toggle('show',!!msg)}}
 function setCloudStatus(msg){$('cloudStatus').textContent=msg}
@@ -243,14 +247,14 @@ async function deleteCloudBook(id){const {error}=await sb.from(CLOUD_TABLE).dele
 async function saveBookCloud(b){await upsertBook(b);setCloudStatus('☁️ 저장됨 · '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}))}
 async function migrateLocalIfNeeded(){
   const local=localBooks();
-  if(!local.length||books.length)return;
+  if(!local.length||books.length||migrationSkipped())return;
   const ok=confirm(`이 브라우저에 저장된 웹소설 ${local.length}개를 현재 로그인한 계정의 클라우드 서재로 옮길까요?\n\n확인하면 기존 테스트 데이터가 클라우드에 복사됩니다.`);
-  if(!ok)return;
+  if(!ok){markMigrationSkipped();return;}
   let count=0;
   for(const b of local){try{await upsertBook(b);count++}catch(e){console.error(e)}}
   await loadCloud();
-  setCloudStatus(`☁️ 기존 테스트 데이터 ${count}개를 클라우드로 옮겼습니다.`);
-  alert(`웹소설 ${count}개를 클라우드 서재로 옮겼어요!`);
+  clearMigrationSkipped();setCloudStatus(`☁️ 기존 테스트 데이터 ${count}개를 클라우드로 옮겼습니다.`);
+  clearMigrationSkipped();alert(`웹소설 ${count}개를 클라우드 서재로 옮겼어요!`);
 }
 async function initAfterLogin(){
   try{setCloudStatus('☁️ 서재 불러오는 중…');await loadCloud();await migrateLocalIfNeeded();renderBooks();setCloudStatus(`☁️ 클라우드 연결됨 · ${books.length}작품`);}
