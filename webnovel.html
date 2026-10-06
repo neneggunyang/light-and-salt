@@ -44,11 +44,13 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#f8fcf8
 .progress{height:9px;background:#d6e6d8;border-radius:8px;overflow:hidden;margin:10px 0}.progress i{display:block;height:100%;background:var(--gold)}
 .book-actions{display:flex;gap:7px;margin-top:12px}.book-actions button{flex:1}
 .empty{text-align:center;padding:45px;color:var(--muted)}
-.form{display:grid;grid-template-columns:1fr 1fr;gap:13px}.full{grid-column:1/-1}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:19px 20px}.full{grid-column:1/-1}
 label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
 .hero{background:linear-gradient(135deg,#f7fcf8,#dcefe0);border:1px solid var(--line);padding:22px}
 .warning{border:1px solid #c59a55;background:#edf8fc;padding:16px;margin-top:12px;display:none}
 .warning.show{display:block}
+.required-label{color:#b23a48;font-size:12px;font-weight:700;margin-left:4px;}
+.form-guide{margin:2px 0 20px;padding:4px 2px;line-height:1.9;font-size:14px;color:var(--muted);}
 .table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{border-bottom:1px solid var(--line);padding:10px;text-align:left;white-space:nowrap}
 .bar{height:15px;background:#d8e8da;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--brown)}
 .modal{position:fixed;inset:0;background:rgba(35,24,16,.58);display:none;align-items:center;justify-content:center;padding:18px;z-index:5}.modal.show{display:flex}
@@ -140,12 +142,13 @@ label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
 <section id="add" class="view">
   <div class="card">
     <div class="section-title"><h2 id="formTitle">📖 웹소설 등록</h2></div>
+    <div class="form-guide">💡 해당하는 사항이 없으면 칸을 비워둬도 등록 가능합니다.</div>
     <div class="form">
       <div class="full"><label>작품 형태 *</label><div class="type-choice">
         <label class="type-option"><input type="radio" name="workType" value="serial" checked onchange="toggleWorkType()"><span>📖 연재물</span></label>
         <label class="type-option"><input type="radio" name="workType" value="volume" onchange="toggleWorkType()"><span>📕 단행본</span></label>
       </div></div>
-      <div><label>작품명 *</label><input id="title" placeholder="예: 전지적 독자 시점"></div>
+      <div><label>작품명 <span class="required-label">필수입력*</span></label><input id="title" placeholder="예: 전지적 독자 시점"></div>
       <div><label>작가</label><input id="writer" placeholder="작가명"></div>
       <div><label>표지작가</label><input id="artist" placeholder="표지작가명"></div>
       <div><label>🏷️ 장르</label><select id="genre"><option>BL</option><option>GL</option><option>로맨스</option><option>판타지</option><option>현판</option><option>무협</option><option>로판</option><option>BL+19</option><option>로맨스/로판+19</option></select></div>
@@ -154,7 +157,7 @@ label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
         <div><label>총 화수</label><input id="total" type="number" min="0" placeholder="예: 551"></div>
         <div><label>현재 읽은 화수</label><input id="read" type="number" min="0" value="0"></div>
         <div><label>작품 연재 상태</label><select id="seriesStatus"><option value="serializing">연재</option><option value="completed">완결</option><option value="hiatus">연재중단</option></select></div>
-        <div><label>🔖 연재 플랫폼</label><select id="seriesPlatform"><option>문피아</option><option>리디북스</option><option>카카오페이지</option><option>교보문고</option><option>조아라</option><option>알라딘</option><option>없음</option><option>기타</option></select></div>
+        <div><label>🔖 연재 플랫폼</label><select id="seriesPlatform"><option>없음</option><option>문피아</option><option>리디북스</option><option>카카오페이지</option><option>교보문고</option><option>조아라</option><option>알라딘</option><option>기타</option></select></div>
       </div></div>
 
       <div id="volumeFields" class="full" style="display:none"><div class="form nested">
@@ -248,7 +251,7 @@ function toggleWorkType(){const t=getWorkType();$('serialFields').style.display=
 function toggleSideStory(){const on=$('hasSideStory').value==='yes';$('sideTotal').disabled=!on;$('sideRead').disabled=!on;if(!on){$('sideTotal').value=0;$('sideRead').value=0}}
 function syncDoneStatus(){if($('status').value!=='done')return;if(getWorkType()==='serial'){$('read').value=$('total').value||0}else{$('volumeRead').value=$('volumeTotal').value||0;if($('hasSideStory').value==='yes')$('sideRead').value=$('sideTotal').value||0}}
 function checkDuplicate(){const t=$('title').value.trim().toLowerCase();const found=books.filter(b=>b.title.toLowerCase()===t&&b.id!==editingId);if(found.length){const same=found[0];$('warning').classList.add('show');$('warning').innerHTML=`<strong>🕯️ 빛과 소금의 경고</strong><br>「${esc(same.title)}」은(는) 이미 서재에 있습니다.<br><br>작품 형태: <b>${workTypeLabels[same.workType]||'연재물'}</b><br>구매 플랫폼: <b>${same.purchases.map(p=>esc(p.platform)).join(' · ')}</b><br><br>새 플랫폼을 추가하려는 것이라면 저장 버튼으로 계속할 수 있습니다.`}else $('warning').classList.remove('show')}
-function newPurchase(){return {id:'p_'+Date.now()+'_'+Math.random().toString(36).slice(2),platform:$('platform').value,price:+$('price').value||0,date:$('buyDate').value||new Date().toISOString().slice(0,10)}}
+function newPurchase(){return {id:'p_'+Date.now()+'_'+Math.random().toString(36).slice(2),platform:$('platform').value,price:+$('price').value||0,date:$('buyDate').value||''}}
 function isVolumeComplete(b){return b.workType==='volume'&&b.volumeTotal>0&&b.volumeRead>=b.volumeTotal}
 function isFullyComplete(b){if(b.workType==='serial')return b.total>0&&b.read>=b.total;return isVolumeComplete(b)&&(b.hasSideStory!=='yes'||b.sideTotal===0||b.sideRead>=b.sideTotal)}
 async function saveBook(){
@@ -265,8 +268,8 @@ function celebrate(b){const isVol=b.workType==='volume';let title=isVol?'🎉 �
 function showCelebration(title,body){$('celebrateTitle').innerHTML=title;$('celebrateBody').innerHTML=body;$('celebrateModal').classList.add('show');const box=$('celebrateModal');box.querySelectorAll('.burst').forEach(x=>x.remove());['🎉','📚','✨','👏','🎊','✨','📖','🎉'].forEach((e,i)=>{const s=document.createElement('span');s.className='burst';s.textContent=e;s.style.setProperty('--x',(Math.random()*80-40)+'vw');s.style.setProperty('--y',(Math.random()*70-35)+'vh');s.style.animationDelay=(i*.05)+'s';box.appendChild(s)})}
 function closeCelebration(){$('celebrateModal').classList.remove('show')}
 function closeModal(){$('modal').classList.remove('show');pendingBook=null}
-function resetForm(){editingId=null;$('formTitle').textContent='📖 웹소설 등록';$('saveBtn').textContent='빛과 소금에 기록하기';document.querySelector('input[name="workType"][value="serial"]').checked=true;['title','writer','artist','total','memo'].forEach(id=>$(id).value='');$('read').value=0;$('seriesStatus').value='serializing';$('seriesPlatform').value='문피아';$('volumeTotal').value=0;$('volumeRead').value=0;$('hasSideStory').value='no';$('sideTotal').value=0;$('sideRead').value=0;$('originPlatform').value='문피아';$('platform').value='리디북스';$('price').value=0;$('status').value='unread';$('buyDate').value=new Date().toISOString().slice(0,10);$('publishDate').value='';$('warning').classList.remove('show');toggleWorkType();toggleSideStory()}
-function editBook(id){const b=books.find(x=>x.id===id);if(!b)return;editingId=id;showView('add');$('formTitle').textContent='✎ 웹소설 수정';$('saveBtn').textContent='기록 수정하기';document.querySelector(`input[name="workType"][value="${b.workType||'serial'}"]`).checked=true;$('title').value=b.title;$('writer').value=b.writer||'';$('artist').value=b.artist||'';$('genre').value=b.genre||'BL';$('total').value=b.total||0;$('seriesStatus').value=b.seriesStatus||'serializing';$('seriesPlatform').value=b.seriesPlatform||'문피아';$('read').value=b.read||0;$('volumeTotal').value=b.volumeTotal||0;$('volumeRead').value=b.volumeRead||0;$('hasSideStory').value=b.hasSideStory?'yes':'no';$('sideTotal').value=b.sideTotal||0;$('sideRead').value=b.sideRead||0;$('originPlatform').value=b.originPlatform||'문피아';$('status').value=b.status||'unread';$('memo').value=b.memo||'';const p=b.purchases?.[0]||{};$('platform').value=p.platform||'기타';$('price').value=p.price||0;$('buyDate').value=p.date||'';$('publishDate').value=b.publishDate||'';toggleWorkType();toggleSideStory();checkDuplicate()}
+function resetForm(){editingId=null;$('formTitle').textContent='📖 웹소설 등록';$('saveBtn').textContent='빛과 소금에 기록하기';document.querySelector('input[name="workType"][value="serial"]').checked=true;['title','writer','artist','total','memo'].forEach(id=>$(id).value='');$('read').value=0;$('seriesStatus').value='serializing';$('seriesPlatform').value='없음';$('volumeTotal').value=0;$('volumeRead').value=0;$('hasSideStory').value='no';$('sideTotal').value=0;$('sideRead').value=0;$('originPlatform').value='문피아';$('platform').value='리디북스';$('price').value=0;$('status').value='unread';$('buyDate').value='';$('publishDate').value='';$('warning').classList.remove('show');toggleWorkType();toggleSideStory()}
+function editBook(id){const b=books.find(x=>x.id===id);if(!b)return;editingId=id;showView('add');$('formTitle').textContent='✎ 웹소설 수정';$('saveBtn').textContent='기록 수정하기';document.querySelector(`input[name="workType"][value="${b.workType||'serial'}"]`).checked=true;$('title').value=b.title;$('writer').value=b.writer||'';$('artist').value=b.artist||'';$('genre').value=b.genre||'BL';$('total').value=b.total||0;$('seriesStatus').value=b.seriesStatus||'serializing';$('seriesPlatform').value=b.seriesPlatform||'없음';$('read').value=b.read||0;$('volumeTotal').value=b.volumeTotal||0;$('volumeRead').value=b.volumeRead||0;$('hasSideStory').value=b.hasSideStory?'yes':'no';$('sideTotal').value=b.sideTotal||0;$('sideRead').value=b.sideRead||0;$('originPlatform').value=b.originPlatform||'문피아';$('status').value=b.status||'unread';$('memo').value=b.memo||'';const p=b.purchases?.[0]||{};$('platform').value=p.platform||'기타';$('price').value=p.price||0;$('buyDate').value=p.date||'';$('publishDate').value=b.publishDate||'';toggleWorkType();toggleSideStory();checkDuplicate()}
 async function deleteBook(id){if(!confirm('이 작품을 서재에서 삭제할까요?'))return;if(!(await cloudDeleteBook(id)))return;books=books.filter(b=>b.id!==id);saveLocal();renderBooks()}
 async function updateRead(id){const b=books.find(x=>x.id===id);if(!b)return;if(b.workType==='serial'){const n=prompt('현재 읽은 화수를 입력하세요.',b.read);if(n===null)return;b.read=Math.max(0,+n||0);if(b.total&&b.read>=b.total)b.status='done';else if(b.read>0&&b.status==='unread')b.status='reading'}else{const n=prompt('현재 읽은 권수를 입력하세요.',b.volumeRead);if(n===null)return;b.volumeRead=Math.max(0,+n||0);if(isVolumeComplete(b))b.status='done';else if(b.volumeRead>0&&b.status==='unread')b.status='reading'}if(await cloudSaveBook(b)){saveLocal();renderBooks()}}
 const statusRank={reading:0,unread:1,paused:2,done:3};
