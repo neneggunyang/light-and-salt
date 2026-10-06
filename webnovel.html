@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>웹소설 업계의 빛과 소금</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+:root{
+  --paper:#eef7ef;--paper2:#f8fcf8;--ink:#294436;--brown:#5d8664;
+  --gold:#7da37f;--line:#c8ddca;--muted:#68806d;--danger:#9a5960;
+  --green:#4f7455;--shadow:0 10px 30px rgba(55,80,55,.10)
+}
+body{margin:0;background:#dcecdf;color:var(--ink);font-family:"Noto Serif KR","Nanum Myeongjo",Georgia,serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:1180px;margin:auto;padding:22px}
+header{position:relative;background:linear-gradient(145deg,#f5fbf5 0%,#e5f2e6 100%);border:1px solid var(--line);box-shadow:var(--shadow);padding:25px 30px 27px;margin-bottom:18px;text-align:center;overflow:hidden}
+header:before,header:after{content:"";position:absolute;left:7%;right:7%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+header:before{top:13px}header:after{bottom:13px}
+header h1:after{content:"✦  ✦  ✦";display:block;color:var(--gold);font-size:.38em;letter-spacing:.32em;margin-top:7px;opacity:.8}header .subtitle:before{content:"📗  ";color:var(--gold)}header .subtitle:after{content:"  🧂";color:var(--gold)}
+.eyebrow{letter-spacing:.18em;color:var(--gold);font-size:12px}
+h1{margin:8px 0 6px;font-size:clamp(24px,5.5vw,38px);font-weight:900;letter-spacing:-0.085em;word-spacing:-0.12em;white-space:nowrap;line-height:1.15;text-shadow:0 1px 0 rgba(255,255,255,.65)}
+.subtitle{color:var(--muted);font-size:14px;letter-spacing:-0.02em}
+nav{display:flex;gap:8px;overflow:auto;padding-bottom:3px;margin-bottom:18px}
+nav button{white-space:nowrap;border:1px solid var(--line);background:var(--paper2);color:var(--ink);padding:11px 16px;border-radius:5px}
+nav button.active{background:var(--brown);color:#f7fff8;border-color:var(--brown)}
+.view{display:none}.view.active{display:block}
+.grid{display:grid;gap:14px}
+.stats{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow);padding:18px}
+.stat strong{display:block;font-size:30px;margin:5px 0}.label{font-size:13px;color:var(--muted)}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:22px 0 10px}
+h2,h3{margin:0}
+.btn{border:1px solid var(--brown);background:var(--brown);color:#fff7e8;padding:9px 14px;border-radius:4px}
+.btn.alt{background:transparent;color:var(--brown)}
+.btn.danger{background:var(--danger);border-color:var(--danger)}
+.controls{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:15px}
+input,select,textarea{width:100%;border:1px solid var(--line);background:#f8fcf8;color:var(--ink);padding:10px;border-radius:4px}
+.controls input{flex:1 1 220px;min-width:200px}.controls select{flex:1 1 170px;min-width:145px;width:auto}.filter-hint{font-size:12px;color:var(--muted);margin:-5px 0 14px;padding-left:2px}
+.book-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.book-title{font-size:17px;font-weight:800;line-height:1.3;margin-bottom:5px;word-break:keep-all}.author{color:var(--muted);font-size:13px}.platform-line{font-size:12px;color:var(--muted);margin-top:8px}.platform-line b{color:var(--green)}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}.badge{font-size:12px;padding:4px 7px;border-radius:12px;background:#dcebdd}
+.progress{height:9px;background:#d6e6d8;border-radius:8px;overflow:hidden;margin:10px 0}.progress i{display:block;height:100%;background:var(--gold)}
+.book-actions{display:flex;gap:7px;margin-top:12px}.book-actions button{flex:1}
+.empty{text-align:center;padding:45px;color:var(--muted)}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:13px}.full{grid-column:1/-1}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
+.hero{background:linear-gradient(135deg,#f7fcf8,#dcefe0);border:1px solid var(--line);padding:22px}
+.warning{border:1px solid #c59a55;background:#edf8fc;padding:16px;margin-top:12px;display:none}
+.warning.show{display:block}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{border-bottom:1px solid var(--line);padding:10px;text-align:left;white-space:nowrap}
+.bar{height:15px;background:#d8e8da;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--brown)}
+.modal{position:fixed;inset:0;background:rgba(35,24,16,.58);display:none;align-items:center;justify-content:center;padding:18px;z-index:5}.modal.show{display:flex}
+.modal-box{max-width:560px;width:100%;background:var(--paper);border:1px solid var(--gold);padding:24px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.note{font-size:12px;color:var(--muted);line-height:1.6}
+
+
+
+@media(max-width:600px){.controls input,.controls select{min-width:0;flex-basis:100%}}
+@media(max-width:850px){.stats{grid-template-columns:repeat(2,1fr)}.book-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.app{padding:10px}header h1{font-size:clamp(22px,7vw,30px);letter-spacing:-0.095em}header{padding:23px 10px 25px}header{padding:22px 14px}.book-grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}.full{grid-column:auto}.card{padding:14px}.stats{gap:9px}.stat strong{font-size:25px}}
+
+.type-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}.type-option{margin:0;cursor:pointer}.type-option input{position:absolute;opacity:0;width:1px;height:1px}.type-option span{display:block;text-align:center;padding:14px;border:2px solid var(--line);border-radius:7px;background:var(--paper2);font-weight:800;color:var(--muted)}.type-option input:checked+span{border-color:var(--brown);background:#e3f1e5;color:var(--green)}.nested{grid-template-columns:1fr 1fr;padding:2px 0}.nested input:disabled{opacity:.55;background:#e9f1ea}@media(max-width:600px){.type-choice,.nested{grid-template-columns:1fr}}
+
+.celebration-modal{background:rgba(34,70,42,.68);overflow:hidden}.celebration-box{position:relative;max-width:560px;width:100%;background:linear-gradient(145deg,#fbfffb,#e3f2e5);border:2px solid var(--gold);padding:34px 24px;text-align:center;box-shadow:0 25px 70px rgba(0,0,0,.3);animation:pop .45s ease-out}.celebration-emoji{font-size:56px;animation:bounce .8s ease-in-out infinite alternate}.celebration-box h2{font-size:clamp(25px,6vw,38px);margin:8px 0;color:var(--green)}.celebration-box p{font-size:17px;line-height:1.8;color:var(--ink)}.burst{position:absolute;left:50%;top:50%;font-size:34px;animation:burst 1.3s ease-out forwards;pointer-events:none}@keyframes pop{0%{transform:scale(.72);opacity:0}70%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}@keyframes bounce{to{transform:translateY(-8px) rotate(4deg)}}@keyframes burst{0%{transform:translate(0,0) scale(.4);opacity:0}15%{opacity:1}100%{transform:translate(var(--x),var(--y)) scale(1.15);opacity:0}}
+.auth-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--paper);border:1px solid var(--line);padding:10px 14px;margin-bottom:14px;box-shadow:var(--shadow);font-size:13px}.auth-email{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.auth-hidden{display:none!important}.login-screen{min-height:70vh;display:flex;align-items:center;justify-content:center}.login-card{max-width:480px;width:100%;background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow);padding:28px}.login-card h2{text-align:center;margin-bottom:8px}.login-card .note{text-align:center;margin-bottom:20px}.login-form{display:grid;gap:10px}.auth-message{padding:10px;background:#edf8fc;border:1px solid var(--line);font-size:13px;line-height:1.6;display:none}.auth-message.show{display:block}.migration-box{margin-top:14px;padding:12px;background:#f5fbf5;border:1px solid var(--line);font-size:13px;line-height:1.6}.migration-actions{display:flex;gap:8px;margin-top:9px}.migration-actions button{flex:1}@media(max-width:600px){.auth-bar{align-items:flex-start}.auth-bar .btn{padding:7px 10px}.login-card{padding:22px 16px}}
+
+.auth-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding:10px 14px;background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow);font-size:13px}.auth-email{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.auth-actions{display:flex;gap:7px;flex-wrap:wrap}.auth-panel{position:fixed;inset:0;background:rgba(35,50,40,.68);display:flex;align-items:center;justify-content:center;padding:18px;z-index:20}.auth-box{max-width:440px;width:100%;background:var(--paper);border:2px solid var(--gold);padding:26px;box-shadow:0 25px 70px rgba(0,0,0,.3)}.auth-box h2{margin-bottom:8px}.auth-box .field{margin-top:12px}.auth-msg{font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px}.auth-error{color:var(--danger);font-size:13px;margin-top:10px}.cloud-status{font-size:11px;color:var(--muted);margin-top:4px}.migration-box{margin-top:12px;padding:12px;border:1px solid var(--gold);background:#f4fbf5;font-size:12px;line-height:1.6}.auth-hidden{display:none!important}@media(max-width:600px){.auth-bar{align-items:flex-start;flex-direction:column}.auth-actions{width:100%}.auth-actions button{flex:1}}
+</style>
+</head>
+<body>
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <h2>🕯️ 웹소설 업계의 빛과 소금</h2>
+    <p class="note">로그인하면 PC와 휴대폰에서 같은 웹소설 서재를 사용할 수 있어요.</p>
+    <div class="login-form">
+      <input id="authEmail" type="email" placeholder="이메일">
+      <input id="authPassword" type="password" placeholder="비밀번호">
+      <button class="btn" onclick="handleLogin()">로그인</button>
+      <button class="btn alt" onclick="handleSignup()">새 계정 만들기</button>
+      <button class="btn alt" onclick="resetPassword()">비밀번호 재설정</button>
+      <div id="authMessage" class="auth-message"></div>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="mainApp">
+<div class="auth-bar"><div><div class="auth-email" id="authUserEmail"></div><div class="cloud-status" id="cloudStatus">☁️ 클라우드 연결 준비 중</div></div><div class="auth-actions"><button class="btn alt" id="logoutBtn">로그아웃</button></div></div>
+<header>
+  <h1><span aria-hidden="true">🕯️</span> 웹소설 업계의 빛과 소금 <span aria-hidden="true">🧂</span></h1>
+  <div class="subtitle">당신의 지갑과 서재를 지켜드립니다.</div>
+</header>
+
+<nav id="nav">
+  <button class="active" data-view="home">서재</button>
+  <button data-view="add">웹소설 등록</button>
+  <button data-view="stats">통계</button>
+  <button data-view="random">🎲 오늘 뭐 읽지?</button>
+</nav>
+
+<section id="home" class="view active">
+  <div class="grid stats" id="statsTop"></div>
+  <div class="section-title"><h2>📖 나의 웹소설 서재</h2><button class="btn" onclick="showView('add')">＋ 웹소설 추가</button></div>
+  <div class="controls">
+    <input id="search" placeholder="작품명이나 작가로 검색">
+    <select id="genreFilter" aria-label="장르 필터"><option value="all">🏷️ 장르 · 전체</option><option>BL</option><option>로맨스</option><option>판타지</option><option>현판</option><option>무협</option><option>로판</option><option>BL+19</option><option>로맨스/로판+19</option></select>
+    <select id="statusFilter" aria-label="내 독서 상태 필터">
+      <option value="all">📚 내 상태 · 전체</option>
+      <option value="unread">📕 내 상태 · 안 읽음</option>
+      <option value="reading">📖 내 상태 · 읽는 중</option>
+      <option value="done">✅ 내 상태 · 완독</option>
+      <option value="paused">⏸️ 내 상태 · 중단</option>
+    </select>
+    <select id="seriesFilter" aria-label="작품 연재 상태 필터">
+      <option value="all">🏁 작품 상태 · 전체</option>
+      <option value="completed">🏁 완결작만</option>
+      <option value="serializing">🔥 연재작만</option>
+      <option value="hiatus">⏸️ 연재중단만</option>
+    </select>
+    <select id="sort" aria-label="서재 정렬">
+      <option value="recent">🆕 최근 등록순</option>
+      <option value="titleAsc">🔤 제목순</option>
+      <option value="readingFirst">📖 읽는 중 우선</option>
+      <option value="unreadFirst">💤 안 읽음 우선</option>
+      <option value="doneFirst">✅ 완독 우선</option>
+      <option value="priceDesc">💰 구매금액 높은순</option>
+      <option value="priceAsc">💸 구매금액 낮은순</option>
+      <option value="dateDesc">📅 구매일 최신순</option>
+      <option value="dateAsc">📅 구매일 오래된순</option>
+      <option value="readDesc">📚 읽은 화수 많은순</option>
+      <option value="readAsc">📚 읽은 화수 적은순</option>
+    </select>
+  </div>
+  <div class="filter-hint" id="filterHint">전체 작품 · 최근 등록순</div>
+  <div class="book-grid" id="bookGrid"></div>
+</section>
+
+<section id="add" class="view">
+  <div class="card">
+    <div class="section-title"><h2 id="formTitle">📖 웹소설 등록</h2></div>
+    <div class="form">
+      <div class="full"><label>작품 형태 *</label><div class="type-choice">
+        <label class="type-option"><input type="radio" name="workType" value="serial" checked onchange="toggleWorkType()"><span>📖 연재물</span></label>
+        <label class="type-option"><input type="radio" name="workType" value="volume" onchange="toggleWorkType()"><span>📕 단행본</span></label>
+      </div></div>
+      <div><label>작품명 *</label><input id="title" placeholder="예: 전지적 독자 시점"></div>
+      <div><label>작가</label><input id="writer" placeholder="작가명"></div>
+      <div><label>표지작가</label><input id="artist" placeholder="표지작가명"></div>
+      <div><label>🏷️ 장르</label><select id="genre"><option>BL</option><option>로맨스</option><option>판타지</option><option>현판</option><option>무협</option><option>로판</option><option>BL+19</option><option>로맨스/로판+19</option></select></div>
+
+      <div id="serialFields" class="full"><div class="form nested">
+        <div><label>총 화수</label><input id="total" type="number" min="0" placeholder="예: 551"></div>
+        <div><label>현재 읽은 화수</label><input id="read" type="number" min="0" value="0"></div>
+        <div><label>작품 연재 상태</label><select id="seriesStatus"><option value="serializing">연재</option><option value="completed">완결</option><option value="hiatus">연재중단</option></select></div>
+        <div><label>🔖 연재 플랫폼</label><select id="seriesPlatform"><option>문피아</option><option>리디북스</option><option>카카오페이지</option><option>교보문고</option><option>조아라</option><option>알라딘</option><option>없음</option><option>기타</option></select></div>
+      </div></div>
+
+      <div id="volumeFields" class="full" style="display:none"><div class="form nested">
+        <div><label>총 권수</label><input id="volumeTotal" type="number" min="1" placeholder="예: 8"></div>
+        <div><label>현재 읽은 권수</label><input id="volumeRead" type="number" min="0" value="0"></div>
+        <div><label>외전 여부</label><select id="hasSideStory"><option value="no">외전 없음</option><option value="yes">외전 있음</option></select></div>
+        <div><label>외전 권수</label><input id="sideTotal" type="number" min="0" value="0" disabled></div>
+        <div><label>읽은 외전 권수</label><input id="sideRead" type="number" min="0" value="0" disabled></div>
+        <div><label>🔖 원 연재처</label><select id="originPlatform"><option>문피아</option><option>리디북스</option><option>카카오페이지</option><option>교보문고</option><option>조아라</option><option>알라딘</option><option>없음 / 미연재</option><option>기타</option></select></div>
+      </div></div>
+
+      <div><label>🛒 구매 플랫폼</label><select id="platform"><option>리디북스</option><option>카카오페이지</option><option>교보문고</option><option>문피아</option><option>조아라</option><option>알라딘</option><option>기타</option></select></div>
+      <div><label>구매 금액</label><input id="price" type="number" min="0" value="0"></div>
+      <div><label>구매일</label><input id="buyDate" type="date"></div>
+      <div><label>독서 상태</label><select id="status"><option value="unread">안 읽음</option><option value="reading">읽는 중</option><option value="done">완독</option><option value="paused">중단</option></select></div>
+      <div class="full"><label>메모</label><textarea id="memo" rows="3" placeholder="읽고 싶은 이유, 감상, 다음에 읽을 때 참고할 것 등"></textarea></div>
+    </div>
+    <div id="warning" class="warning"></div>
+    <div style="margin-top:15px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn alt" onclick="resetForm();showView('home')">취소</button>
+      <button class="btn" id="saveBtn" onclick="saveBook()">빛과 소금에 기록하기</button>
+    </div>
+    <p class="note">작품 형태에 따라 연재물은 화수, 단행본은 권수와 외전을 따로 기록합니다. 연재/원 연재처와 구매 플랫폼도 구분합니다.</p>
+  </div>
+</section>
+<section id="stats" class="view">
+  <div class="section-title"><h2>📊 빛과 소금의 통계</h2></div>
+  <div class="grid stats" id="statsDetail"></div>
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:14px">
+    <div class="card"><h3>플랫폼별 보유</h3><div id="platformStats"></div></div>
+    <div class="card"><h3>상태별 보유</h3><div id="statusStats"></div></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>🔄 중복 보유 작품</h3><div id="duplicateList"></div></div>
+</section>
+
+<section id="random" class="view">
+  <div class="hero">
+    <div class="eyebrow">TODAY'S READING</div>
+    <h2 style="margin:7px 0">🎲 오늘 뭐 읽지?</h2>
+    <p>묵혀둔 웹소설을 하나 꺼내드립니다.</p>
+    <button class="btn" onclick="pickRandom()">오늘의 웹소설 뽑기</button>
+  </div>
+  <div id="randomResult" style="margin-top:14px"></div>
+</section>
+</div>
+</div>
+
+<div class="modal celebration-modal" id="celebrateModal"><div class="celebration-box"><div class="celebration-emoji">🎉</div><h2 id="celebrateTitle"></h2><p id="celebrateBody"></p><button class="btn" onclick="closeCelebration()">👏 축하받기 완료!</button></div></div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div id="modalContent"></div>
+    <div class="modal-actions"><button class="btn alt" onclick="closeModal()">돌아가기</button><button class="btn danger" id="modalConfirm">그래도 기록하기</button></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://tybyojivzvgpmdnfccij.supabase.co';
+const SUPABASE_KEY='sb_publishable_u235rMk__ejhXL5BQRcCAw_gLg9qFni';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const LOCAL_KEY='webnovel-light-salt-local-v2';
+const CLOUD_TABLE='webnovel_works';
+let books=[],editingId=null,pendingBook=null,currentUser=null,cloudReady=false;
+const $=id=>document.getElementById(id);
+const won=n=>'₩'+Number(n||0).toLocaleString('ko-KR');
+const labels={unread:'안 읽음',reading:'읽는 중',done:'완독',paused:'중단'};
+const seriesLabels={serializing:'연재',completed:'완결',hiatus:'연재중단'};
+const workTypeLabels={serial:'연재물',volume:'단행본'};
+function localBooks(){try{return JSON.parse(localStorage.getItem(LOCAL_KEY)||'[]')}catch{return[]}}
+function setAuthError(msg=''){if($('authError'))$('authError').textContent=msg;if($('authMessage')){$('authMessage').textContent=msg;$('authMessage').classList.toggle('show',!!msg)}}
+function setAuthMsg(msg=''){if($('authMsg'))$('authMsg').textContent=msg;if($('authMessage')){$('authMessage').textContent=msg;$('authMessage').classList.toggle('show',!!msg)}}
+function setCloudStatus(msg){$('cloudStatus').textContent=msg}
+function showAuth(show){$('mainApp').classList.toggle('auth-hidden',show);$('loginScreen').classList.toggle('auth-hidden',!show)}
+async function loadCloud(){
+  const {data,error}=await sb.from(CLOUD_TABLE).select('id,user_id,data,created_at,updated_at').eq('user_id',currentUser.id);
+  if(error) throw error;
+  books=(data||[]).map(r=>r.data||{}).filter(b=>b&&b.id);
+}
+async function upsertBook(b){
+  const row={id:b.id,user_id:currentUser.id,data:b,updated_at:new Date().toISOString()};
+  const {error}=await sb.from(CLOUD_TABLE).upsert(row,{onConflict:'id'});if(error)throw error;
+}
+async function deleteCloudBook(id){const {error}=await sb.from(CLOUD_TABLE).delete().eq('id',id).eq('user_id',currentUser.id);if(error)throw error}
+async function saveBookCloud(b){await upsertBook(b);setCloudStatus('☁️ 저장됨 · '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}))}
+async function migrateLocalIfNeeded(){
+  const local=localBooks();
+  if(!local.length||books.length)return;
+  const ok=confirm(`이 브라우저에 저장된 웹소설 ${local.length}개를 현재 로그인한 계정의 클라우드 서재로 옮길까요?\n\n확인하면 기존 테스트 데이터가 클라우드에 복사됩니다.`);
+  if(!ok)return;
+  let count=0;
+  for(const b of local){try{await upsertBook(b);count++}catch(e){console.error(e)}}
+  await loadCloud();
+  setCloudStatus(`☁️ 기존 테스트 데이터 ${count}개를 클라우드로 옮겼습니다.`);
+  alert(`웹소설 ${count}개를 클라우드 서재로 옮겼어요!`);
+}
+async function initAfterLogin(){
+  try{setCloudStatus('☁️ 서재 불러오는 중…');await loadCloud();await migrateLocalIfNeeded();renderBooks();setCloudStatus(`☁️ 클라우드 연결됨 · ${books.length}작품`);}
+  catch(e){console.error(e);setCloudStatus('⚠️ 클라우드 연결 오류');alert('웹소설 서재를 불러오지 못했습니다.\n'+(e.message||e))}
+}
+async function handleLogin(){
+  const email=$('authEmail').value.trim(),password=$('authPassword').value;
+  if(!email||!password){setAuthError('이메일과 비밀번호를 입력해주세요.');return}
+  setAuthError('');setAuthMsg('로그인 중…');
+  const {data,error}=await sb.auth.signInWithPassword({email,password});
+  if(error){setAuthError(error.message.includes('Invalid login credentials')?'이메일 또는 비밀번호가 올바르지 않습니다.':error.message);setAuthMsg('기존 웹툰 앱과 같은 계정으로 로그인하세요.');return}
+  if(data.user)setAuthMsg('로그인되었습니다.');
+}
+async function resetPassword(){
+  const email=$('authEmail').value.trim();
+  if(!email){setAuthError('비밀번호 재설정 메일을 받을 이메일을 입력해주세요.');return}
+  setAuthError('');setAuthMsg('재설정 메일을 보내는 중…');
+  const redirect=location.protocol==='http:'||location.protocol==='https:'?location.href:undefined;
+  const {error}=await sb.auth.resetPasswordForEmail(email,redirect?{redirectTo:redirect}:undefined);
+  if(error){setAuthError(error.message);return}
+  setAuthMsg('비밀번호 재설정 메일을 확인해주세요.');
+}
+async function handleSignup(){
+  const email=$('authEmail').value.trim(),password=$('authPassword').value;
+  if(!email||!password){setAuthError('이메일과 비밀번호를 입력해주세요.');return}
+  if(password.length<6){setAuthError('비밀번호는 6자 이상이어야 합니다.');return}
+  setAuthError('');setAuthMsg('회원가입 중…');
+  const redirect=location.protocol==='http:'||location.protocol==='https:'?location.href:undefined;
+  const {data,error}=await sb.auth.signUp({email,password,options:redirect?{emailRedirectTo:redirect}:undefined});
+  if(error){setAuthError(error.message);setAuthMsg('회원가입에 실패했습니다.');return}
+  if(data.session){setAuthMsg('회원가입 및 로그인 완료!')}
+  else setAuthMsg('인증 메일을 확인해주세요. 인증 후 로그인하면 됩니다.');
+}
+async function logout(){await sb.auth.signOut()}
+sb.auth.onAuthStateChange(async(event,session)=>{
+  if(session?.user){currentUser=session.user;$('authUserEmail').textContent='👤 '+(currentUser.email||'로그인 계정');showAuth(false);cloudReady=true;try{await initAfterLogin()}catch(e){console.error(e);setCloudStatus('⚠️ 클라우드 연결 오류');}}
+  else{currentUser=null;cloudReady=false;books=[];$('authUserEmail').textContent='';showAuth(true);setCloudStatus('☁️ 로그인 필요')}
+});
+$('logoutBtn').onclick=logout;
+$('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin()});
+
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));if(id==='home')renderBooks();if(id==='stats')renderStats();if(id==='random')$('randomResult').innerHTML=''}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+$('search').oninput=renderBooks;$('genreFilter').onchange=renderBooks;$('statusFilter').onchange=renderBooks;$('seriesFilter').onchange=renderBooks;$('sort').onchange=renderBooks;$('title').oninput=checkDuplicate;$('platform').onchange=checkDuplicate;
+$('hasSideStory').onchange=toggleSideStory;$('status').onchange=syncDoneStatus;
+function getWorkType(){return document.querySelector('input[name="workType"]:checked')?.value||'serial'}
+function toggleWorkType(){const t=getWorkType();$('serialFields').style.display=t==='serial'?'block':'none';$('volumeFields').style.display=t==='volume'?'block':'none';if(t==='volume'){$('seriesStatus').value='completed';$('status').value='unread'};checkDuplicate()}
+function toggleSideStory(){const on=$('hasSideStory').value==='yes';$('sideTotal').disabled=!on;$('sideRead').disabled=!on;if(!on){$('sideTotal').value=0;$('sideRead').value=0}}
+function syncDoneStatus(){if($('status').value!=='done')return;if(getWorkType()==='serial')$('read').value=$('total').value||0;else{$('volumeRead').value=$('volumeTotal').value||0;if($('hasSideStory').value==='yes')$('sideRead').value=$('sideTotal').value||0}}
+function checkDuplicate(){const t=$('title').value.trim().toLowerCase();const found=books.filter(b=>b.title.toLowerCase()===t&&b.id!==editingId);if(found.length){const same=found[0];$('warning').classList.add('show');$('warning').innerHTML=`<strong>🕯️ 빛과 소금의 경고</strong><br>「${esc(same.title)}」은(는) 이미 서재에 있습니다.<br><br>작품 형태: <b>${workTypeLabels[same.workType]||'연재물'}</b><br>구매 플랫폼: <b>${same.purchases.map(p=>esc(p.platform)).join(' · ')}</b><br><br>새 플랫폼을 추가하려는 것이라면 저장 버튼으로 계속할 수 있습니다.`}else $('warning').classList.remove('show')}
+function newPurchase(){return {id:'p_'+Date.now()+'_'+Math.random().toString(36).slice(2),platform:$('platform').value,price:+$('price').value||0,date:$('buyDate').value||new Date().toISOString().slice(0,10)}}
+function isVolumeComplete(b){return b.workType==='volume'&&b.volumeTotal>0&&b.volumeRead>=b.volumeTotal}
+function isFullyComplete(b){if(b.workType==='serial')return b.total>0&&b.read>=b.total;return isVolumeComplete(b)&&(b.hasSideStory!=='yes'||b.sideTotal===0||b.sideRead>=b.sideTotal)}
+async function saveBook(){
+ if(!currentUser){alert('먼저 로그인해주세요.');return}
+ const title=$('title').value.trim();if(!title){alert('작품명을 입력해주세요.');return}
+ const type=getWorkType(),old=editingId?books.find(b=>b.id===editingId):null;
+ const data={id:editingId||'w_'+Date.now()+'_'+Math.random().toString(36).slice(2),title,writer:$('writer').value.trim(),artist:$('artist').value.trim(),genre:$('genre').value,workType:type,total:type==='serial'?(+$('total').value||0):0,read:type==='serial'?Math.max(0,+$('read').value||0):0,seriesStatus:type==='serial'?$('seriesStatus').value:'completed',seriesPlatform:type==='serial'?$('seriesPlatform').value:'',volumeTotal:type==='volume'?Math.max(0,+$('volumeTotal').value||0):0,volumeRead:type==='volume'?Math.max(0,+$('volumeRead').value||0):0,hasSideStory:type==='volume'&&$('hasSideStory').value==='yes',sideTotal:type==='volume'?Math.max(0,+$('sideTotal').value||0):0,sideRead:type==='volume'?Math.max(0,+$('sideRead').value||0):0,originPlatform:type==='volume'?$('originPlatform').value:'',status:$('status').value,memo:$('memo').value.trim(),purchases:old?old.purchases:[newPurchase()],createdAt:old?.createdAt||Date.now()};
+ if(type==='serial'&&data.total&&data.read>=data.total)data.status='done';if(type==='volume'&&isFullyComplete(data))data.status='done';
+ const found=books.find(b=>b.title.toLowerCase()===title.toLowerCase()&&b.id!==editingId);
+ if(found){pendingBook=data;$('modalContent').innerHTML=`<h2>🕯️ 빛과 소금의 경고</h2><p>이미 <b>${esc(found.title)}</b>을(를) 보유하고 있습니다.</p><p>현재 구매처: <b>${found.purchases.map(p=>esc(p.platform)).join(' · ')}</b></p><p>이번 기록은 <b>${esc(data.purchases[0].platform)}</b> 구매를 추가합니다.</p>`;$('modalConfirm').onclick=async()=>{try{found.purchases.push(data.purchases[0]);await saveBookCloud(found);closeModal();resetForm();showView('home')}catch(e){alert('저장에 실패했습니다.\n'+e.message)}};$('modal').classList.add('show');return}
+ const wasDone=old?old.status==='done':false,nowDone=data.status==='done';
+ try{await saveBookCloud(data);books=old?books.map(b=>b.id===data.id?data:b):[data,...books];resetForm();showView('home');if(!wasDone&&nowDone)celebrate(data)}catch(e){alert('클라우드 저장에 실패했습니다.\n'+e.message)}
+}
+function celebrate(b){const isVol=b.workType==='volume';let title=isVol?'🎉 본편 완독!':'🎉 완독을 해냈습니다!';let body;if(isVol){const hasSide=b.hasSideStory&&b.sideTotal>0;if(!hasSide)body=`『${esc(b.title)}』의 본편 ${b.volumeTotal}권을 모두 읽었어요!<br><br>📚 정말 대단합니다. 👏`;else if(b.sideRead<b.sideTotal)body=`『${esc(b.title)}』의 본편 ${b.volumeTotal}권을 모두 읽었어요.<br><br>✨ 아직 외전 ${Math.max(0,b.sideTotal-b.sideRead)}권이 남아 있어요!`;else body=`『${esc(b.title)}』의 본편과 외전까지 전부 읽었어요!<br><br>👑 진짜 완전 완독입니다!`}else body=`『${esc(b.title)}』을(를) 끝까지 읽어냈어요.<br><br>📚 정말 대단합니다. 👏`;showCelebration(title,body)}
+function showCelebration(title,body){$('celebrateTitle').innerHTML=title;$('celebrateBody').innerHTML=body;$('celebrateModal').classList.add('show');const box=$('celebrateModal');box.querySelectorAll('.burst').forEach(x=>x.remove());['🎉','📚','✨','👏','🎊','✨','📖','🎉'].forEach((e,i)=>{const s=document.createElement('span');s.className='burst';s.textContent=e;s.style.setProperty('--x',(Math.random()*80-40)+'vw');s.style.setProperty('--y',(Math.random()*70-35)+'vh');s.style.animationDelay=(i*.05)+'s';box.appendChild(s)})}
+function closeCelebration(){$('celebrateModal').classList.remove('show')}
+function closeModal(){$('modal').classList.remove('show');pendingBook=null}
+function resetForm(){editingId=null;$('formTitle').textContent='📖 웹소설 등록';$('saveBtn').textContent='빛과 소금에 기록하기';document.querySelector('input[name="workType"][value="serial"]').checked=true;['title','writer','artist','total','memo'].forEach(id=>$(id).value='');$('genre').value='BL';$('read').value=0;$('seriesStatus').value='serializing';$('seriesPlatform').value='문피아';$('volumeTotal').value=0;$('volumeRead').value=0;$('hasSideStory').value='no';$('sideTotal').value=0;$('sideRead').value=0;$('originPlatform').value='문피아';$('platform').value='리디북스';$('price').value=0;$('status').value='unread';$('buyDate').value=new Date().toISOString().slice(0,10);$('warning').classList.remove('show');toggleWorkType();toggleSideStory()}
+function editBook(id){const b=books.find(x=>x.id===id);if(!b)return;editingId=id;showView('add');$('formTitle').textContent='✎ 웹소설 수정';$('saveBtn').textContent='기록 수정하기';document.querySelector(`input[name="workType"][value="${b.workType||'serial'}"]`).checked=true;$('title').value=b.title;$('writer').value=b.writer||'';$('artist').value=b.artist||'';$('genre').value=b.genre||'BL';$('total').value=b.total||0;$('seriesStatus').value=b.seriesStatus||'serializing';$('seriesPlatform').value=b.seriesPlatform||'문피아';$('read').value=b.read||0;$('volumeTotal').value=b.volumeTotal||0;$('volumeRead').value=b.volumeRead||0;$('hasSideStory').value=b.hasSideStory?'yes':'no';$('sideTotal').value=b.sideTotal||0;$('sideRead').value=b.sideRead||0;$('originPlatform').value=b.originPlatform||'문피아';$('status').value=b.status||'unread';$('memo').value=b.memo||'';const p=b.purchases?.[0]||{};$('platform').value=p.platform||'기타';$('price').value=p.price||0;$('buyDate').value=p.date||'';toggleWorkType();toggleSideStory();checkDuplicate()}
+async function deleteBook(id){if(!confirm('이 작품을 서재에서 삭제할까요?'))return;try{await deleteCloudBook(id);books=books.filter(b=>b.id!==id);renderBooks()}catch(e){alert('삭제에 실패했습니다.\n'+e.message)}}
+async function updateRead(id){const b=books.find(x=>x.id===id);if(!b)return;if(b.workType==='serial'){const n=prompt('현재 읽은 화수를 입력하세요.',b.read);if(n===null)return;b.read=Math.max(0,+n||0);if(b.total&&b.read>=b.total)b.status='done';else if(b.read>0&&b.status==='unread')b.status='reading'}else{const n=prompt('현재 읽은 권수를 입력하세요.',b.volumeRead);if(n===null)return;b.volumeRead=Math.max(0,+n||0);if(isVolumeComplete(b))b.status='done';else if(b.volumeRead>0&&b.status==='unread')b.status='reading'}try{await saveBookCloud(b);renderBooks()}catch(e){alert('저장에 실패했습니다.\n'+e.message)}}
+const statusRank={reading:0,unread:1,paused:2,done:3};
+function purchaseTotal(b){return (b.purchases||[]).reduce((s,p)=>s+(+p.price||0),0)}
+function latestPurchaseDate(b){return (b.purchases||[]).map(p=>p.date||'').filter(Boolean).sort().pop()||''}
+function getSortValue(b,key){switch(key){case 'readingFirst':return statusRank[b.status]??9;case 'unreadFirst':return b.status==='unread'?0:1;case 'doneFirst':return b.status==='done'?0:1;case 'priceDesc':return -purchaseTotal(b);case 'priceAsc':return purchaseTotal(b);case 'dateDesc':return latestPurchaseDate(b);case 'dateAsc':return latestPurchaseDate(b);case 'readDesc':return -(b.workType==='volume'?b.volumeRead:b.read);case 'readAsc':return b.workType==='volume'?b.volumeRead:b.read;default:return -b.createdAt}}
+function sortBooks(arr,key){return [...arr].sort((a,b)=>{if(key==='titleAsc')return(a.title||'').localeCompare(b.title||'','ko');if(key==='dateDesc')return latestPurchaseDate(b).localeCompare(latestPurchaseDate(a));if(key==='dateAsc')return latestPurchaseDate(a).localeCompare(latestPurchaseDate(b));const av=getSortValue(a,key),bv=getSortValue(b,key);if(av<bv)return-1;if(av>bv)return 1;return(a.title||'').localeCompare(b.title||'','ko')})}
+function renderBooks(){const q=$('search').value.toLowerCase().trim(),g=$('genreFilter').value,f=$('statusFilter').value,sf=$('seriesFilter').value,sort=$('sort').value;let arr=books.filter(b=>(g==='all'||b.genre===g)&&(!q||b.title.toLowerCase().includes(q)||(b.writer||'').toLowerCase().includes(q)||(b.artist||'').toLowerCase().includes(q)||(b.seriesPlatform||b.originPlatform||'').toLowerCase().includes(q)||b.purchases.some(p=>(p.platform||'').toLowerCase().includes(q)))&&(f==='all'||b.status===f)&&(sf==='all'||b.workType==='serial'&&b.seriesStatus===sf));arr=sortBooks(arr,sort);$('statsTop').innerHTML=statCards();const genreText=g==='all'?'전체':g,statusText=f==='all'?'전체':labels[f],seriesText=sf==='all'?'전체':seriesLabels[sf]+'작',sortText=$('sort').selectedOptions[0].textContent.replace(/^\S+\s/,'');$('filterHint').textContent=`${genreText} · ${seriesText} · ${statusText} · ${sortText} · ${arr.length}작품`;if(!arr.length){$('bookGrid').innerHTML='<div class="card empty" style="grid-column:1/-1">조건에 맞는 웹소설이 없습니다.<br>필터를 조금 풀어보세요. 📗</div>';return}$('bookGrid').innerHTML=arr.map(bookCard).join('')}
+function statCards(){const total=books.length,un=books.filter(b=>b.status==='unread').length,rd=books.filter(b=>b.status==='reading').length,dn=books.filter(b=>b.status==='done').length;return `<div class="card stat"><span class="label">총 작품</span><strong>${total}</strong><span class="label">서재에 기록됨</span></div><div class="card stat"><span class="label">미독</span><strong>${un}</strong><span class="label">아직 펼치지 않음</span></div><div class="card stat"><span class="label">읽는 중</span><strong>${rd}</strong><span class="label">진행 중</span></div><div class="card stat"><span class="label">완독</span><strong>${dn}</strong><span class="label">빛으로 인도함</span></div>`}
+function bookCard(b){if(b.workType==='volume'){const pct=b.volumeTotal?Math.min(100,Math.round(b.volumeRead/b.volumeTotal*100)):0;const side=b.hasSideStory?`<div class="note">✨ 외전 ${b.sideRead||0} / ${b.sideTotal||0}권</div>`:'<div class="note">외전 없음</div>';const origin=b.originPlatform?`<div class="platform-line">🔖 원 연재처 · <b>${esc(b.originPlatform)}</b></div>`:'';return `<div class="card"><div class="book-title">${esc(b.title)}</div><div class="author">${esc(b.writer||'작가 미기록')}${b.artist?` · 표지 ${esc(b.artist)}`:''}</div><div class="badges"><span class="badge">${labels[b.status]}</span><span class="badge">📕 단행본</span><span class="badge">🏷️ ${esc(b.genre||'미분류')}</span></div>${origin}<div class="platform-line">🛒 구매 · <b>${b.purchases.map(p=>esc(p.platform)).join(' · ')}</b></div><div class="note">본편 ${b.volumeRead||0} / ${b.volumeTotal||0}권 · ${pct}%</div><div class="progress"><i style="width:${pct}%"></i></div>${side}<div class="note">구매금액 ${won(purchaseTotal(b))}${b.hasSideStory&&isFullyComplete(b)?' · 👑 본편+외전 완독':''}</div><div class="book-actions"><button class="btn alt" onclick="updateRead('${b.id}')">읽은 권수</button><button class="btn alt" onclick="editBook('${b.id}')">수정</button><button class="btn danger" onclick="deleteBook('${b.id}')">삭제</button></div></div>`}const pct=b.total?Math.min(100,Math.round(b.read/b.total*100)):0;return `<div class="card"><div class="book-title">${esc(b.title)}</div><div class="author">${esc(b.writer||'작가 미기록')}${b.artist?` · 표지 ${esc(b.artist)}`:''}</div><div class="badges"><span class="badge">${labels[b.status]}</span><span class="badge">작품 · ${seriesLabels[b.seriesStatus||'serializing']}</span><span class="badge">📖 연재물</span><span class="badge">🏷️ ${esc(b.genre||'미분류')}</span></div><div class="platform-line">🔖 연재 · <b>${esc(b.seriesPlatform||'없음')}</b></div><div class="platform-line">🛒 구매 · <b>${b.purchases.map(p=>esc(p.platform)).join(' · ')}</b></div><div class="note">${b.read||0} / ${b.total||0}화 · ${pct}%</div><div class="progress"><i style="width:${pct}%"></i></div><div class="note">구매금액 ${won(purchaseTotal(b))}${b.purchases.length>1?' · '+b.purchases.length+'곳 보유':''}</div><div class="book-actions"><button class="btn alt" onclick="updateRead('${b.id}')">읽은 화수</button><button class="btn alt" onclick="editBook('${b.id}')">수정</button><button class="btn danger" onclick="deleteBook('${b.id}')">삭제</button></div></div>`}
+function renderStats(){$('statsDetail').innerHTML=statCards()+`<div class="card stat"><span class="label">총 구매금액</span><strong>${won(totalSpent())}</strong><span class="label">모든 플랫폼</span></div>`;const ps={};books.forEach(b=>b.purchases.forEach(p=>ps[p.platform]=(ps[p.platform]||0)+1));const max=Math.max(1,...Object.values(ps));$('platformStats').innerHTML=Object.entries(ps).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div style="margin:13px 0"><div style="display:flex;justify-content:space-between"><span>${esc(k)}</span><b>${v}</b></div><div class="bar"><i style="width:${v/max*100}%"></i></div></div>`).join('')||'<p class="note">아직 데이터가 없습니다.</p>';const ss={};books.forEach(b=>ss[labels[b.status]]=(ss[labels[b.status]]||0)+1);$('statusStats').innerHTML=Object.entries(ss).map(([k,v])=>`<div style="padding:9px 0;border-bottom:1px solid var(--line)">${k}<b style="float:right">${v}</b></div>`).join('')||'<p class="note">아직 데이터가 없습니다.</p>';const dup=books.filter(b=>b.purchases.length>1);$('duplicateList').innerHTML=dup.length?`<div class="table-wrap"><table class="table"><tr><th>작품</th><th>구매처</th><th>구매금액</th></tr>${dup.map(b=>`<tr><td>${esc(b.title)}</td><td>${b.purchases.map(p=>esc(p.platform)).join(' · ')}</td><td>${won(purchaseTotal(b))}</td></tr>`).join('')}</table></div>`:'<p class="empty">중복 보유 작품이 없습니다. 빛과 소금의 뜻을 잘 따르고 계십니다. 🕯️</p>'}
+function totalSpent(){return books.reduce((s,b)=>s+purchaseTotal(b),0)}
+function pickRandom(){const pool=books.filter(b=>b.status!=='done');if(!pool.length){$('randomResult').innerHTML='<div class="card empty">추천할 미완독 작품이 없습니다. 모든 작품을 완독하셨군요. ✨</div>';return}const b=pool[Math.floor(Math.random()*pool.length)];const progress=b.workType==='volume'?`${b.volumeRead||0}/${b.volumeTotal||0}권`:`${b.read||0}/${b.total||0}화`;$('randomResult').innerHTML=`<div class="card" style="text-align:center;padding:30px"><div class="eyebrow">TODAY'S PICK</div><h2 style="margin:10px">${esc(b.title)}</h2><p>${esc(b.writer||'작가 미기록')} · ${labels[b.status]} · ${workTypeLabels[b.workType]} · 🏷️ ${esc(b.genre||'미분류')}</p><p>${progress}</p><button class="btn" onclick="editBook('${b.id}')">이 작품 기록하기</button></div>`}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+$('celebrateModal').addEventListener('click',e=>{if(e.target.id==='celebrateModal')closeCelebration()});
+resetForm();
+</script>
+</body>
+</html>
