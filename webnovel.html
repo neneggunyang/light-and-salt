@@ -68,6 +68,7 @@ label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
 
 .celebration-modal{background:rgba(34,70,42,.68);overflow:hidden}.celebration-box{position:relative;max-width:560px;width:100%;background:linear-gradient(145deg,#fbfffb,#e3f2e5);border:2px solid var(--gold);padding:34px 24px;text-align:center;box-shadow:0 25px 70px rgba(0,0,0,.3);animation:pop .45s ease-out}.celebration-emoji{font-size:56px;animation:bounce .8s ease-in-out infinite alternate}.celebration-box h2{font-size:clamp(25px,6vw,38px);margin:8px 0;color:var(--green)}.celebration-box p{font-size:17px;line-height:1.8;color:var(--ink)}.burst{position:absolute;left:50%;top:50%;font-size:34px;animation:burst 1.3s ease-out forwards;pointer-events:none}@keyframes pop{0%{transform:scale(.72);opacity:0}70%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}@keyframes bounce{to{transform:translateY(-8px) rotate(4deg)}}@keyframes burst{0%{transform:translate(0,0) scale(.4);opacity:0}15%{opacity:1}100%{transform:translate(var(--x),var(--y)) scale(1.15);opacity:0}}
 .auth-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--paper);border:1px solid var(--line);padding:10px 14px;margin-bottom:14px;box-shadow:var(--shadow);font-size:13px}.auth-email{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.auth-hidden{display:none!important}.login-screen{min-height:70vh;display:flex;align-items:center;justify-content:center}.login-card{max-width:480px;width:100%;background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow);padding:28px}.login-card h2{text-align:center;margin-bottom:8px}.login-card .note{text-align:center;margin-bottom:20px}.login-form{display:grid;gap:10px}.auth-message{padding:10px;background:#edf8fc;border:1px solid var(--line);font-size:13px;line-height:1.6;display:none}.auth-message.show{display:block}.migration-box{margin-top:14px;padding:12px;background:#f5fbf5;border:1px solid var(--line);font-size:13px;line-height:1.6}.migration-actions{display:flex;gap:8px;margin-top:9px}.migration-actions button{flex:1}@media(max-width:600px){.auth-bar{align-items:flex-start}.auth-bar .btn{padding:7px 10px}.login-card{padding:22px 16px}}
+ .date-field{display:flex;flex-direction:column;gap:7px}.date-field .note{margin:0}.date-input-wrap{position:relative;display:flex;align-items:center}.date-input-wrap input[type="text"]{font-variant-numeric:tabular-nums;padding-right:44px}.calendar-btn{position:absolute;right:5px;top:5px;bottom:5px;width:34px;border:1px solid var(--line);border-radius:4px;background:var(--paper2);color:var(--ink);font-size:16px}.calendar-btn:hover{background:#e3f1e5}.native-date-picker{position:absolute;right:7px;top:50%;width:1px;height:1px;opacity:0;pointer-events:none;border:0;padding:0}
 </style>
 </head>
 <body>
@@ -166,9 +167,9 @@ label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
       </div></div>
 
       <div><label>🛒 구매 플랫폼</label><select id="platform"><option>리디북스</option><option>카카오페이지</option><option>교보문고</option><option>문피아</option><option>조아라</option><option>알라딘</option><option>기타</option></select></div>
-      <div><label>📚 출간일</label><input id="publishDate" type="date"></div>
-      <div><label>📖 읽기 시작한 날짜</label><input id="readStartDate" type="date"></div>
-      <div><label>🏁 완독한 날짜</label><input id="readEndDate" type="date"></div>
+      <div class="date-field"><label>📚 출간일</label><div class="date-input-wrap"><input id="publishDateText" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" aria-label="📚 출간일, YYYYMMDD 형식"><button type="button" class="calendar-btn" aria-label="달력에서 📚 출간일 선택" onclick="openDatePicker('publishDate')"><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="1.5"></rect><path d="M7 3v4M17 3v4M3 9h18"></path></svg></button><input id="publishDate" class="native-date-picker" type="date" aria-label="📚 출간일 달력 선택" tabindex="-1"></div><p class="note date-hint">8자리 숫자를 입력하거나 📅 달력 버튼으로 날짜를 선택하세요.</p><p class="note date-error" id="publishDateError" style="display:none;color:var(--danger)">날짜를 YYYYMMDD 형식의 올바른 날짜로 입력해주세요.</p></div>
+      <div class="date-field"><label>📖 읽기 시작한 날짜</label><div class="date-input-wrap"><input id="readStartDateText" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" aria-label="📖 읽기 시작한 날짜, YYYYMMDD 형식"><button type="button" class="calendar-btn" aria-label="달력에서 📖 읽기 시작한 날짜 선택" onclick="openDatePicker('readStartDate')"><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="1.5"></rect><path d="M7 3v4M17 3v4M3 9h18"></path></svg></button><input id="readStartDate" class="native-date-picker" type="date" aria-label="📖 읽기 시작한 날짜 달력 선택" tabindex="-1"></div><p class="note date-hint">8자리 숫자를 입력하거나 📅 달력 버튼으로 날짜를 선택하세요.</p><p class="note date-error" id="readStartDateError" style="display:none;color:var(--danger)">날짜를 YYYYMMDD 형식의 올바른 날짜로 입력해주세요.</p></div>
+      <div class="date-field"><label>🏁 완독한 날짜</label><div class="date-input-wrap"><input id="readEndDateText" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" aria-label="🏁 완독한 날짜, YYYYMMDD 형식"><button type="button" class="calendar-btn" aria-label="달력에서 🏁 완독한 날짜 선택" onclick="openDatePicker('readEndDate')"><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="1.5"></rect><path d="M7 3v4M17 3v4M3 9h18"></path></svg></button><input id="readEndDate" class="native-date-picker" type="date" aria-label="🏁 완독한 날짜 달력 선택" tabindex="-1"></div><p class="note date-hint">8자리 숫자를 입력하거나 📅 달력 버튼으로 날짜를 선택하세요.</p><p class="note date-error" id="readEndDateError" style="display:none;color:var(--danger)">날짜를 YYYYMMDD 형식의 올바른 날짜로 입력해주세요.</p></div>
       <div><label>독서 상태</label><select id="status"><option value="unread">안 읽음</option><option value="reading">읽는 중</option><option value="done">완독</option><option value="paused">중단</option></select></div>
       <div class="full"><label>메모</label><textarea id="memo" rows="3" placeholder="읽고 싶은 이유, 감상, 다음에 읽을 때 참고할 것 등"></textarea></div>
     </div>
@@ -250,6 +251,47 @@ function checkDuplicate(){const t=$('title').value.trim().toLowerCase();const fo
 function newPurchase(){return {id:'p_'+Date.now()+'_'+Math.random().toString(36).slice(2),platform:$('platform').value}}
 function isVolumeComplete(b){return b.workType==='volume'&&b.volumeTotal>0&&b.volumeRead>=b.volumeTotal}
 function isFullyComplete(b){if(b.workType==='serial')return b.total>0&&b.read>=b.total;return isVolumeComplete(b)&&(b.hasSideStory!=='yes'||b.sideTotal===0||b.sideRead>=b.sideTotal)}
+function parseCompactDate(value){
+ const raw=String(value||'').trim();
+ if(!raw)return {value:'',valid:true};
+ if(!/^\d{8}$/.test(raw))return {value:'',valid:false};
+ const y=Number(raw.slice(0,4)),m=Number(raw.slice(4,6)),d=Number(raw.slice(6,8));
+ const dt=new Date(y,m-1,d);
+ if(dt.getFullYear()!==y||dt.getMonth()!==m-1||dt.getDate()!==d)return {value:'',valid:false};
+ return {value:`${raw.slice(0,4)}-${raw.slice(4,6)}-${raw.slice(6,8)}`,valid:true};
+}
+function syncDateText(id){
+ const picker=$(id),text=$(id+'Text'),err=$(id+'Error');
+ text.value=picker.value?picker.value.replaceAll('-',''):'';
+ text.setAttribute('aria-invalid','false');err.style.display='none';
+}
+function openDatePicker(id){
+ const picker=$(id);
+ try{if(typeof picker.showPicker==='function')picker.showPicker();else{picker.focus();picker.click()}}catch(e){picker.focus();picker.click()}
+}
+function validateDateInputs(){
+ let valid=true;
+ ['publishDate','readStartDate','readEndDate'].forEach(id=>{
+   const text=$(id+'Text'),picker=$(id),err=$(id+'Error');
+   const parsed=parseCompactDate(text.value);
+   if(!parsed.valid){valid=false;err.style.display='block';text.setAttribute('aria-invalid','true');return}
+   err.style.display='none';text.setAttribute('aria-invalid','false');picker.value=parsed.value;
+ });
+ if(!valid){const first=document.querySelector('.date-field input[aria-invalid="true"]');first?.focus()}
+ return valid;
+}
+function initDateInputs(){
+ ['publishDate','readStartDate','readEndDate'].forEach(id=>{
+  const picker=$(id),text=$(id+'Text');
+  picker.addEventListener('change',()=>syncDateText(id));
+  text.addEventListener('input',()=>{
+   const parsed=parseCompactDate(text.value);
+   if(!text.value.trim()){picker.value='';$(id+'Error').style.display='none';text.setAttribute('aria-invalid','false');return}
+   if(parsed.valid){picker.value=parsed.value;$(id+'Error').style.display='none';text.setAttribute('aria-invalid','false')}
+   else {picker.value='';$(id+'Error').style.display='none';text.setAttribute('aria-invalid','false');}
+  });
+ });
+}
 async function saveBook(){
  const title=$('title').value.trim();if(!title){alert('작품명을 입력해주세요.');return}
  const type=getWorkType();const old=editingId?books.find(b=>b.id===editingId):null;
@@ -264,8 +306,8 @@ function celebrate(b){const isVol=b.workType==='volume';let title=isVol?'🎉 �
 function showCelebration(title,body){$('celebrateTitle').innerHTML=title;$('celebrateBody').innerHTML=body;$('celebrateModal').classList.add('show');const box=$('celebrateModal');box.querySelectorAll('.burst').forEach(x=>x.remove());['🎉','📚','✨','👏','🎊','✨','📖','🎉'].forEach((e,i)=>{const s=document.createElement('span');s.className='burst';s.textContent=e;s.style.setProperty('--x',(Math.random()*80-40)+'vw');s.style.setProperty('--y',(Math.random()*70-35)+'vh');s.style.animationDelay=(i*.05)+'s';box.appendChild(s)})}
 function closeCelebration(){$('celebrateModal').classList.remove('show')}
 function closeModal(){$('modal').classList.remove('show');pendingBook=null}
-function resetForm(){editingId=null;$('formTitle').textContent='📖 웹소설 등록';$('saveBtn').textContent='빛과 소금에 기록하기';document.querySelector('input[name="workType"][value="serial"]').checked=true;['title','writer','artist','total','memo','readStartDate','readEndDate'].forEach(id=>$(id).value='');$('read').value=0;$('seriesStatus').value='serializing';$('seriesPlatform').value='없음';$('volumeTotal').value=0;$('volumeRead').value=0;$('hasSideStory').value='no';$('sideTotal').value=0;$('sideRead').value=0;$('originPlatform').value='없음 / 미연재';$('platform').value='리디북스';$('status').value='unread';$('publishDate').value='';$('readStartDate').value='';$('readEndDate').value='';$('warning').classList.remove('show');toggleWorkType();toggleSideStory()}
-function editBook(id){const b=books.find(x=>x.id===id);if(!b)return;editingId=id;showView('add');$('formTitle').textContent='✎ 웹소설 수정';$('saveBtn').textContent='기록 수정하기';document.querySelector(`input[name="workType"][value="${b.workType||'serial'}"]`).checked=true;$('title').value=b.title;$('writer').value=b.writer||'';$('artist').value=b.artist||'';$('genre').value=b.genre||'BL';$('total').value=b.total||0;$('seriesStatus').value=b.seriesStatus||'serializing';$('seriesPlatform').value=b.seriesPlatform||'없음';$('read').value=b.read||0;$('volumeTotal').value=b.volumeTotal||0;$('volumeRead').value=b.volumeRead||0;$('hasSideStory').value=b.hasSideStory?'yes':'no';$('sideTotal').value=b.sideTotal||0;$('sideRead').value=b.sideRead||0;$('originPlatform').value=b.originPlatform||(b.workType==='volume'?'없음 / 미연재':'문피아');$('status').value=b.status||'unread';$('memo').value=b.memo||'';const p=b.purchases?.[0]||{};$('platform').value=p.platform||'기타';$('publishDate').value=b.publishDate||'';$('readStartDate').value=b.readStartDate||'';$('readEndDate').value=b.readEndDate||'';toggleWorkType();toggleSideStory();checkDuplicate()}
+function resetForm(){editingId=null;$('formTitle').textContent='📖 웹소설 등록';$('saveBtn').textContent='빛과 소금에 기록하기';document.querySelector('input[name="workType"][value="serial"]').checked=true;['title','writer','artist','total','memo','readStartDate','readEndDate'].forEach(id=>$(id).value='');$('read').value=0;$('seriesStatus').value='serializing';$('seriesPlatform').value='없음';$('volumeTotal').value=0;$('volumeRead').value=0;$('hasSideStory').value='no';$('sideTotal').value=0;$('sideRead').value=0;$('originPlatform').value='없음 / 미연재';$('platform').value='리디북스';$('status').value='unread';$('publishDate').value='';$('readStartDate').value='';$('readEndDate').value='';['publishDate','readStartDate','readEndDate'].forEach(syncDateText);$('warning').classList.remove('show');toggleWorkType();toggleSideStory()}
+function editBook(id){const b=books.find(x=>x.id===id);if(!b)return;editingId=id;showView('add');$('formTitle').textContent='✎ 웹소설 수정';$('saveBtn').textContent='기록 수정하기';document.querySelector(`input[name="workType"][value="${b.workType||'serial'}"]`).checked=true;$('title').value=b.title;$('writer').value=b.writer||'';$('artist').value=b.artist||'';$('genre').value=b.genre||'BL';$('total').value=b.total||0;$('seriesStatus').value=b.seriesStatus||'serializing';$('seriesPlatform').value=b.seriesPlatform||'없음';$('read').value=b.read||0;$('volumeTotal').value=b.volumeTotal||0;$('volumeRead').value=b.volumeRead||0;$('hasSideStory').value=b.hasSideStory?'yes':'no';$('sideTotal').value=b.sideTotal||0;$('sideRead').value=b.sideRead||0;$('originPlatform').value=b.originPlatform||(b.workType==='volume'?'없음 / 미연재':'문피아');$('status').value=b.status||'unread';$('memo').value=b.memo||'';const p=b.purchases?.[0]||{};$('platform').value=p.platform||'기타';$('publishDate').value=b.publishDate||'';$('readStartDate').value=b.readStartDate||'';$('readEndDate').value=b.readEndDate||'';['publishDate','readStartDate','readEndDate'].forEach(syncDateText);toggleWorkType();toggleSideStory();checkDuplicate()}
 async function deleteBook(id){if(!confirm('이 작품을 서재에서 삭제할까요?'))return;if(!(await cloudDeleteBook(id)))return;books=books.filter(b=>b.id!==id);saveLocal();renderBooks()}
 async function updateRead(id){const b=books.find(x=>x.id===id);if(!b)return;if(b.workType==='serial'){const n=prompt('현재 읽은 화수를 입력하세요.',b.read);if(n===null)return;b.read=Math.max(0,+n||0);if(b.total&&b.read>=b.total)b.status='done';else if(b.read>0&&b.status==='unread')b.status='reading'}else{const n=prompt('현재 읽은 권수를 입력하세요.',b.volumeRead);if(n===null)return;b.volumeRead=Math.max(0,+n||0);if(isVolumeComplete(b))b.status='done';else if(b.volumeRead>0&&b.status==='unread')b.status='reading'}if(await cloudSaveBook(b)){saveLocal();renderBooks()}}
 const statusRank={reading:0,unread:1,paused:2,done:3};
@@ -277,7 +319,9 @@ function bookCard(b){if(b.workType==='volume'){const pct=b.volumeTotal?Math.min(
 function renderStats(){$('statsDetail').innerHTML=statCards()+``;const ps={};books.forEach(b=>b.purchases.forEach(p=>ps[p.platform]=(ps[p.platform]||0)+1));const max=Math.max(1,...Object.values(ps));$('platformStats').innerHTML=Object.entries(ps).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div style="margin:13px 0"><div style="display:flex;justify-content:space-between"><span>${esc(k)}</span><b>${v}</b></div><div class="bar"><i style="width:${v/max*100}%"></i></div></div>`).join('')||'<p class="note">아직 데이터가 없습니다.</p>';const ss={};books.forEach(b=>ss[labels[b.status]]=(ss[labels[b.status]]||0)+1);$('statusStats').innerHTML=Object.entries(ss).map(([k,v])=>`<div style="padding:9px 0;border-bottom:1px solid var(--line)">${k}<b style="float:right">${v}</b></div>`).join('')||'<p class="note">아직 데이터가 없습니다.</p>';const dup=books.filter(b=>b.purchases.length>1);$('duplicateList').innerHTML=dup.length?`<div class="table-wrap"><table class="table"><tr><th>작품</th><th>구매처</th></tr>${dup.map(b=>`<tr><td>${esc(b.title)}</td><td>${b.purchases.map(p=>esc(p.platform)).join(' · ')}</td></tr>`).join('')}</table></div>`:'<p class="empty">중복 보유 작품이 없습니다. 빛과 소금의 뜻을 잘 따르고 계십니다. 🕯️</p>'}
 function pickRandom(){const pool=books.filter(b=>b.status!=='done');if(!pool.length){$('randomResult').innerHTML='<div class="card empty">추천할 미완독 작품이 없습니다. 모든 작품을 완독하셨군요. ✨</div>';return}const b=pool[Math.floor(Math.random()*pool.length)];const progress=b.workType==='volume'?`${b.volumeRead||0}/${b.volumeTotal||0}권`:`${b.read||0}/${b.total||0}화`;$('randomResult').innerHTML=`<div class="card" style="text-align:center;padding:30px"><div class="eyebrow">TODAY'S PICK</div><h2 style="margin:10px">${esc(b.title)}</h2><p>${esc(b.writer||'작가 미기록')} · ${labels[b.status]} · ${workTypeLabels[b.workType]} · 🏷️ ${esc(b.genre||'미분류')}</p><p>${progress}</p><button class="btn" onclick="editBook('${b.id}')">이 작품 기록하기</button></div>`}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+initDateInputs();
 $('celebrateModal').addEventListener('click',e=>{if(e.target.id==='celebrateModal')closeCelebration()});
+initDateInputs();
 $('loginScreen').classList.remove('auth-hidden');
 </script>
 </script>
